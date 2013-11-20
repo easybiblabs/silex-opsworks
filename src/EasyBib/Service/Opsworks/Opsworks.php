@@ -155,7 +155,7 @@ class Opsworks
     }
 
     private function debug($string) {
-        if($this->logger) {
+        if ($this->logger) {
             $this->logger->addDebug($string);
         }
     }
