@@ -154,7 +154,8 @@ class Opsworks
         return $instanceIds;
     }
 
-    private function debug($string) {
+    private function debug($string)
+    {
         if ($this->logger) {
             $this->logger->addDebug($string);
         }
