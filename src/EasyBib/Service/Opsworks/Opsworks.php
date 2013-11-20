@@ -60,9 +60,7 @@ class Opsworks
 
         );
         $this->debug('opsworks::createDeployment');
-        var_dump(get_class($this->opsworks));
         $result = $this->opsworks->createDeployment($deployParameters);
-        var_dump($result);
         $deploymentId = $result->get('DeploymentId');
         return $deploymentId;
     }
