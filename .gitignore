@@ -1,0 +1,10 @@
+.idea
+
+bin/*
+vendor/*
+*/logs/*
+*/cache/*
+web/uploads/*
+web/bundles/*
+
+var/.vagrant

@@ -1,0 +1,90 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+# Cookbooks: https://github.com/till/easybib-cookbooks
+#
+# vagrant ssh
+# cd /vagrant_data
+# ./composer.phar install
+# ./bin/phpunit
+
+require "yaml"
+
+def start_vagrantboxes
+
+  # get onfig from yaml file
+  vagrantconfig = get_easybib_vagrantconfig
+
+  # set box names and locations of cookbooks
+  box_file = "precise64-chef11"
+  Vagrant.configure("2") do |config|
+
+    config.vm.define :dev do |dev_config|
+      dev_config.vm.box = box_file
+      dev_config.vm.network :private_network, ip: "33.33.33.161"
+      dev_config.vm.synced_folder "./../", "/vagrant_data", :owner => "vagrant", :nfs => vagrantconfig["nfs"]
+      dev_config.vm.provider :virtualbox do |vb|
+        vb.gui = vagrantconfig["gui"]
+
+        vb.customize [
+              "modifyvm", :id,
+              "--name", "silex opsworks dev box",
+              "--memory", "512"
+        ]
+      end
+
+      dev_config.vm.provision :shell, :inline => "apt-get update"
+      dev_config.vm.provision :chef_solo do |chef|
+        chef.cookbooks_path = vagrantconfig["cookbook_path"]
+        chef.add_recipe "ohai"
+        chef.add_recipe "easybib::role-phpapp"
+        chef.add_recipe "php-pear"
+        chef.add_recipe "php-posix"
+        chef.add_recipe "avahi"
+        chef.log_level = :debug
+      end
+    end
+  end
+end
+
+def get_easybib_vagrantconfig
+
+  vagrantconfig = {
+    "nfs" => false,
+    "cookbook_path" => '~/Sites/easybib/cookbooks',
+    "chef_log_level" => 'debug',
+    "additional_json" => '{}',
+    "gui" => false
+  }
+
+  begin
+    localconfigpath = File.expand_path("~/.config/easybib/vagrantdefault.yml")
+
+    localconfigfile = File.open(localconfigpath, 'r')
+    vagrantconfig.merge!(YAML.load(localconfigfile.read))
+
+  rescue Errno::ENOENT
+    puts 'WARNING: No vagrant user-config found, using default cookbook path'
+    create_default_vagrantconfigfile(localconfigpath, vagrantconfig)
+  end
+
+  return vagrantconfig
+end
+
+
+def create_default_vagrantconfigfile(localconfigpath, vagrantconfig)
+  begin
+    FileUtils.mkdir_p(File.dirname(localconfigpath))
+    File.open(localconfigpath, 'w+') do |file|
+      file.write( vagrantconfig.to_yaml )
+      puts "INFO: Created default vagrant user-config in ~/.config/easybib/vagrantdefault.yml"
+      puts "INFO: You probably want to fix the path to the cookbooks in this file."
+    end
+
+  rescue
+    puts "WARNING: Unable to create default ~/.config/easybib/vagrantdefault.yml - please do it manually."
+  end
+end
+
+start_vagrantboxes

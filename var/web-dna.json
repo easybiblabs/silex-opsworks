@@ -1,0 +1,12 @@
+{
+    "php-fpm": {
+        "user": "vagrant",
+        "group": "vagrant"
+    },
+    "deploy": {
+        "deploy_to": "/var/www/easybib"
+    },
+    "easybib": {
+        "cluster_name": "vagrant"
+    }
+}
