@@ -65,6 +65,25 @@ class Opsworks
         return $deploymentId;
     }
 
+    public function executeStackCommand($stackId, $command, $args = null)
+    {
+        $deployParameters = array(
+            'Command' => array(
+                'Name' => $command
+            ),
+            'StackId' => $stackId,
+            'InstanceIds' => $this->getInstanceIdsForStack($stackId)
+        );
+
+        if($args) {
+            $deployParameters['Command']['Args'] = $args;
+        }
+
+        $result = $this->opsworks->createDeployment($deployParameters);
+        $deploymentId = $result->get('DeploymentId');
+        return $deploymentId;
+    }
+
     /**
      * @param string $appid Opsworks Application Id
      * @param string $revision Git Source Revision
@@ -163,7 +182,7 @@ class Opsworks
            $stackIds[$stack['StackId']] = $stack['Name'];
         }
         return $stackIds;
-        
+
     }
 
     private function debug($string)
