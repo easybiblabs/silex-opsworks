@@ -154,6 +154,12 @@ class Opsworks
         return $instanceIds;
     }
 
+    public function getAllStacks()
+    {
+        $stacks = $this->opsworks->describeStacksResult();
+        var_dump($stacks);
+    }
+
     private function debug($string)
     {
         if ($this->logger) {
