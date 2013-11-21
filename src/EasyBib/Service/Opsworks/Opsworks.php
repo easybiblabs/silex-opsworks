@@ -156,7 +156,7 @@ class Opsworks
 
     public function getAllStacks()
     {
-        $stacks = $this->opsworks->describeStacksResult();
+        $stacks = $this->opsworks->describeStacks();
         var_dump($stacks);
     }
 
