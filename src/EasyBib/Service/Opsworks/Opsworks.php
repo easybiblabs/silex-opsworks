@@ -75,7 +75,7 @@ class Opsworks
             'InstanceIds' => $this->getInstanceIdsForStack($stackId)
         );
 
-        if($args) {
+        if ($args) {
             $deployParameters['Command']['Args'] = $args;
         }
 
@@ -179,7 +179,7 @@ class Opsworks
         $stacks = $this->opsworks->describeStacks()->getAll();
 
         foreach ($stacks['Stacks'] as $stack) {
-           $stackIds[$stack['StackId']] = $stack['Name'];
+            $stackIds[$stack['StackId']] = $stack['Name'];
         }
         return $stackIds;
 
