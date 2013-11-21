@@ -156,8 +156,14 @@ class Opsworks
 
     public function getAllStacks()
     {
-        $stacks = $this->opsworks->describeStacks();
-        var_dump($stacks);
+        $stackIds = array();
+        $stacks = $this->opsworks->describeStacks()->getAll();
+
+        foreach ($stacks['Stacks'] as $stack) {
+           $stackIds[$stack['StackId']] = $stack['Name'];
+        }
+        return $stackIds;
+        
     }
 
     private function debug($string)
