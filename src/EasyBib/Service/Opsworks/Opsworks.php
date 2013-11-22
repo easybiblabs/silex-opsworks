@@ -175,13 +175,13 @@ class Opsworks
 
     public function getAllStacks()
     {
-        $stackIds = array();
+        $stackResult = array();
         $stacks = $this->opsworks->describeStacks()->getAll();
 
         foreach ($stacks['Stacks'] as $stack) {
-            $stackIds[$stack['StackId']] = $stack['Name'];
+            $stackResult[$stack['StackId']] = $stack;
         }
-        return $stackIds;
+        return $stackResult;
 
     }
 
