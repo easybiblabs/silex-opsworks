@@ -173,6 +173,22 @@ class Opsworks
         return $instanceIds;
     }
 
+    /**
+     * @param $layer Opsworks Layer Id
+     * @return array
+     */
+    public function getInstanceIdsForLayer($layerId)
+    {
+        $instanceParameters = $this->opsworks->describeInstances(array('LayerId' => $layerId));
+        $instances = $instanceParameters->get('Instances');
+        $instanceIds = array();
+        foreach ($instances as $instance) {
+            $instanceIds[] = $instance['InstanceId'];
+        }
+        $this->debug('opsworks::getInstanceIdsForLayer - returning ' . implode(',', $instanceIds));
+        return $instanceIds;
+    }
+
     public function getAllStacks()
     {
         $stackResult = array();
