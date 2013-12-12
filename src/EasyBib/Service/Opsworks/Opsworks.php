@@ -13,10 +13,11 @@ use Aws\OpsWorks\OpsWorksClient;
  */
 class Opsworks
 {
-    /** @var OpsWorksClient $opsworks  */
+    /** @var OpsWorksClient $opsworks */
     protected $opsworks;
     /** @var \Monolog\Logger $logger */
     protected $logger;
+    protected $cache;
 
     /**
      * @param OpsWorksClient $opsworks
@@ -26,6 +27,7 @@ class Opsworks
     {
         $this->logger = $logger;
         $this->opsworks = $opsworks;
+        $this->cache = array();
     }
 
     /**
@@ -158,7 +160,7 @@ class Opsworks
     }
 
     /**
-     * @param $stackId Opsworks Stack Id
+     * @param string $stackId stringOpsworks Stack Id
      * @return array
      */
     public function getInstanceIdsForStack($stackId)
@@ -174,7 +176,8 @@ class Opsworks
     }
 
     /**
-     * @param $layer Opsworks Layer Id
+     * Returns all Instance Ids of a layer
+     * @param string $layer Opsworks Layer Id
      * @return array
      */
     public function getInstanceIdsForLayer($layerId)
@@ -189,16 +192,99 @@ class Opsworks
         return $instanceIds;
     }
 
+    /**
+     * Returns all apps belonging to a stack
+     * @param string $stackId Opsworks Stack Id
+     * @return array
+     */
+    public function getAllAppsForStack($stackId)
+    {
+        $opsworksApps = array();
+        $apiResult = $this->opsworks->describeApps(array('StackId' => $stackId))->get('Apps');
+        foreach ($apiResult as $opsworksApp) {
+            $opsworksApps[$opsworksApp['AppId']] = $opsworksApp['Name'];
+        }
+        return $opsworksApps;
+    }
+
+    /**
+     * Returns all apps across all stacks, cached
+     * @return array
+     */
+    public function getAllApps()
+    {
+        if (array_key_exists('get_all_apps', $this->cache)) {
+            return $this->cache['get_all_apps'];
+        }
+
+        $opsworksApps = array();
+        $stackIds = array_keys($this->getAllStacks());
+        foreach ($stackIds as $stackId) {
+            $stackApps = $this->getAllAppsForStack($stackId);
+            $opsworksApps = array_merge($opsworksApps, $stackApps);
+        }
+
+        $this->cache['get_all_apps'] = $opsworksApps;
+
+        return $opsworksApps;
+    }
+
+    /**
+     * Returns all stacks, cached
+     * @return array
+     */
     public function getAllStacks()
     {
-        $stackResult = array();
-        $stacks = $this->opsworks->describeStacks()->getAll();
+        if (array_key_exists('get_all_stacks', $this->cache)) {
+            return $this->cache['get_all_stacks'];
+        }
 
-        foreach ($stacks['Stacks'] as $stack) {
+        $stackResult = array();
+        $stacks = $this->opsworks->describeStacks()->get('Stacks');
+
+        foreach ($stacks as $stack) {
             $stackResult[$stack['StackId']] = $stack;
         }
+
+        $this->cache['get_all_stacks'] = $stackResult;
+
         return $stackResult;
 
+    }
+
+    /**
+     * Returns last deployments for a stack
+     * @param string $stackId Opsworks Stack Id
+     * @return array
+     */
+    public function getDeploymentsForStack($stackId)
+    {
+        return $this->opsworks
+            ->describeDeployments(
+                array('StackId' => $stackId)
+            )
+            ->get('Deployments');
+    }
+
+    /**
+     * Returns all recent deployments across all stacks, cached
+     * @return array
+     */
+    public function getAllDeployments()
+    {
+        if (array_key_exists('get_all_deployments', $this->cache)) {
+            return $this->cache['get_all_deployments'];
+        }
+
+        $deployments = array();
+        $stackIds = array_keys($this->getAllStacks());
+        foreach ($stackIds as $stackId) {
+            $deployments[$stackId] = $this->getDeploymentsForStack($stackId);
+        }
+
+        $this->cache['get_all_deployments'] = $deployments;
+
+        return $deployments;
     }
 
     private function debug($string)
