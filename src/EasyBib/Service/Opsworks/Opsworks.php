@@ -50,8 +50,6 @@ class Opsworks
         } else {
             $this->cache = new \Doctrine\Common\Cache\ArrayCache();
         }
-        $this->cache = array();
-
     }
 
     /**
