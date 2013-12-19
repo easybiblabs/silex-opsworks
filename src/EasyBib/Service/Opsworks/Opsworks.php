@@ -226,8 +226,8 @@ class Opsworks
      */
     public function getAllApps()
     {
-        if (array_key_exists('get_all_apps', $this->cache)) {
-            return $this->cache['get_all_apps'];
+        if ($this->getCache('get_all_apps')) {
+            return $this->getCache('get_all_apps');
         }
 
         $opsworksApps = array();
@@ -237,7 +237,7 @@ class Opsworks
             $opsworksApps = array_merge($opsworksApps, $stackApps);
         }
 
-        $this->cache['get_all_apps'] = $opsworksApps;
+        $this->setCache('get_all_apps', $opsworksApps);
 
         return $opsworksApps;
     }
@@ -248,8 +248,8 @@ class Opsworks
      */
     public function getAllStacks()
     {
-        if (array_key_exists('get_all_stacks', $this->cache)) {
-            return $this->cache['get_all_stacks'];
+        if ($this->getCache('get_all_stacks')) {
+            return $this->getCache('get_all_stacks');
         }
 
         $stackResult = array();
@@ -258,8 +258,7 @@ class Opsworks
         foreach ($stacks as $stack) {
             $stackResult[$stack['StackId']] = $stack;
         }
-
-        $this->cache['get_all_stacks'] = $stackResult;
+        $this->setCache('get_all_stacks', $stackResult);
 
         return $stackResult;
 
@@ -285,8 +284,8 @@ class Opsworks
      */
     public function getAllDeployments()
     {
-        if (array_key_exists('get_all_deployments', $this->cache)) {
-            return $this->cache['get_all_deployments'];
+        if ($this->getCache('get_all_deployments')) {
+            return $this->getCache('get_all_deployments');
         }
 
         $deployments = array();
@@ -295,7 +294,7 @@ class Opsworks
             $deployments[$stackId] = $this->getDeploymentsForStack($stackId);
         }
 
-        $this->cache['get_all_deployments'] = $deployments;
+        $this->setCache('get_all_deployments', $deployments);
 
         return $deployments;
     }
@@ -305,5 +304,18 @@ class Opsworks
         if ($this->logger) {
             $this->logger->addDebug($string);
         }
+    }
+
+    private function setCache($identifier, $value)
+    {
+        $this->cache[$identifier] = $value;
+    }
+
+    private function getCache($identifier)
+    {
+        if (array_key_exists($identifier, $this->cache)) {
+            return $this->cache[$identifier];
+        }
+        return false;
     }
 }
