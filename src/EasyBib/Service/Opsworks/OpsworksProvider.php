@@ -30,7 +30,7 @@ class OpsworksProvider implements ServiceProviderInterface
     {
         $app['opsworks'] = $app->share(
             function () use ($app) {
-                return new Opsworks($app['aws']->get('opsworks'), $app['logger']);
+                return new Opsworks($app['aws']->get('opsworks'), $app['cache'], $app['logger']);
             }
         );
     }

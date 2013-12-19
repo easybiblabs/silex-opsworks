@@ -30,17 +30,28 @@ class Opsworks
     protected $opsworks;
     /** @var \Monolog\Logger $logger */
     protected $logger;
+    /** @var \Doctrine\Common\Cache\Cache */
     protected $cache;
 
     /**
      * @param OpsWorksClient $opsworks
+     * @param \Doctrine\Common\Cache\Cache $cache
      * @param \Monolog\Logger $logger
      */
-    public function __construct(OpsWorksClient $opsworks, \Monolog\Logger $logger = null)
-    {
+    public function __construct(
+        OpsWorksClient $opsworks,
+        \Doctrine\Common\Cache\Cache $cache = null,
+        \Monolog\Logger $logger = null
+    ) {
         $this->logger = $logger;
         $this->opsworks = $opsworks;
+        if ($cache) {
+            $this->cache = $cache;
+        } else {
+            $this->cache = new \Doctrine\Common\Cache\ArrayCache();
+        }
         $this->cache = array();
+
     }
 
     /**
@@ -308,14 +319,11 @@ class Opsworks
 
     private function setCache($identifier, $value)
     {
-        $this->cache[$identifier] = $value;
+        return $this->cache->save('bib-opsstatus-' . $identifier, $value, 60 * 60 * 24);
     }
 
     private function getCache($identifier)
     {
-        if (array_key_exists($identifier, $this->cache)) {
-            return $this->cache[$identifier];
-        }
-        return false;
+        return $this->cache->fetch('bib-opsstatus-' . $identifier);
     }
 }
