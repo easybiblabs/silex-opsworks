@@ -1,7 +1,7 @@
 language: php
 
-before_script:
-  - ./composer.phar install --dev --prefer-source --no-interaction
+install:
+  - composer install --dev --prefer-dist --no-interaction
 
 php:
   - 5.5
