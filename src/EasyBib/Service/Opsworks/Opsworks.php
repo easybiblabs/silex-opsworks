@@ -16,13 +16,14 @@ namespace EasyBib\Service\Opsworks;
 
 use Aws\Common\Credentials\CredentialsInterface;
 use Aws\OpsWorks\OpsWorksClient;
+use Doctrine\Common\Cache;
+use Monolog\Logger;
 
 /**
  * Class OpsWorks
  * @package EasyBib\Service\Opsworks
  *
  * The Opsworks Service Provider - encapsulates the AWS Opsworks class
- *
  */
 class Opsworks
 {
@@ -35,25 +36,26 @@ class Opsworks
 
     /**
      * @param OpsWorksClient $opsworks
-     * @param \Doctrine\Common\Cache\Cache $cache
-     * @param \Monolog\Logger $logger
+     * @param Cache\Cache    $cache
+     * @param Logger         $logger
      */
     public function __construct(
         OpsWorksClient $opsworks,
-        \Doctrine\Common\Cache\Cache $cache = null,
-        \Monolog\Logger $logger = null
+        Cache\Cache $cache = null,
+        Logger $logger = null
     ) {
         $this->logger = $logger;
         $this->opsworks = $opsworks;
         if ($cache) {
             $this->cache = $cache;
         } else {
-            $this->cache = new \Doctrine\Common\Cache\ArrayCache();
+            $this->cache = new Cache\ArrayCache();
         }
     }
 
     /**
      * @param CredentialsInterface $credentials
+     *
      * @return mixed
      */
     public function setCredentials(CredentialsInterface $credentials)
@@ -65,9 +67,10 @@ class Opsworks
     /**
      * @param string $appid Opsworks Application Id
      * @param string $stackid Opsworks Stack Id
-     * @param array $instanceids Opsworks Instance Ids
+     * @param array  $instanceids Opsworks Instance Ids
      * @param string $comment optional Deploy Comment
      * @param string $customJson optional Custom Json for the deploy
+     *
      * @return mixed
      */
     public function deployApp($appid, $stackid, $instanceids, $comment = 'Continuous Deployment', $customJson = '')
@@ -111,6 +114,7 @@ class Opsworks
     /**
      * @param string $appid Opsworks Application Id
      * @param string $revision Git Source Revision
+     *
      * @return mixed
      */
     public function updateAppRevision($appid, $revision)
@@ -139,7 +143,8 @@ class Opsworks
      * Returns the Application Parameters from Opsworks
      * Strips Sshkey and SslConfiguration, since we get it filtered (and therefore useless) from Opsworks anyway
      *
-     * @param $appid Opsworks Application Id
+     * @param string $appid Opsworks Application Id
+     *
      * @return mixed
      * @throws \UnexpectedValueException
      */
@@ -170,7 +175,9 @@ class Opsworks
 
     /**
      * @param $appid Opsworks Application Id
+     *
      * @return mixed
+     *
      * @throws \UnexpectedValueException
      */
     public function getStackIdForApp($appid)
@@ -213,7 +220,9 @@ class Opsworks
 
     /**
      * Returns all Instance Ids of a layer
-     * @param string $layer Opsworks Layer Id
+     *
+     * @param string $layerId Opsworks Layer Id
+     *
      * @return array
      */
     public function getInstanceIdsForLayer($layerId)
@@ -230,7 +239,9 @@ class Opsworks
 
     /**
      * Returns all apps belonging to a stack
+     *
      * @param string $stackId Opsworks Stack Id
+     *
      * @return array
      */
     public function getAllAppsForStack($stackId)
@@ -245,6 +256,7 @@ class Opsworks
 
     /**
      * Returns all apps across all stacks, cached
+     *
      * @return array
      */
     public function getAllApps()
@@ -267,6 +279,7 @@ class Opsworks
 
     /**
      * Returns all stacks, cached
+     *
      * @return array
      */
     public function getAllStacks()
@@ -289,7 +302,9 @@ class Opsworks
 
     /**
      * Returns last deployments for a stack
+     *
      * @param string $stackId Opsworks Stack Id
+     *
      * @return array
      */
     public function getDeploymentsForStack($stackId)
@@ -303,6 +318,7 @@ class Opsworks
 
     /**
      * Returns all recent deployments across all stacks, cached
+     *
      * @return array
      */
     public function getAllDeployments()
