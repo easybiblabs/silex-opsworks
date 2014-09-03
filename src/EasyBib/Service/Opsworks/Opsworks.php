@@ -122,6 +122,19 @@ class Opsworks
     }
 
     /**
+     * @param string $appid Opsworks Application Id
+     * @param string $url Url to deploy from
+     * @return mixed
+     */
+    public function updateAppUrl($appid, $url)
+    {
+        $appParameters = $this->getAppParameters($appid);
+        $appParameters['AppSource']['Url'] = $url;
+        $this->debug('opsworks::updateApp');
+        return $this->opsworks->updateApp($appParameters);
+    }
+
+    /**
      *
      * Returns the Application Parameters from Opsworks
      * Strips Sshkey and SslConfiguration, since we get it filtered (and therefore useless) from Opsworks anyway
@@ -148,9 +161,10 @@ class Opsworks
 
         $appParameters = array_pop($apps);
         // sshkey is returned as "*****FILTERED*****" from Opsworks, and we dont want to set this in config :)
-        // same for sslconfig
+        // same for sslconfig and s3-password
         unset($appParameters['AppSource']['SshKey']);
         unset($appParameters['SslConfiguration']);
+        unset($appParameters['AppSource']['Password']);
         return $appParameters;
     }
 
