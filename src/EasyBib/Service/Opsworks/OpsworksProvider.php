@@ -13,6 +13,7 @@
  */
 namespace EasyBib\Service\Opsworks;
 
+use Aws\Common\Credentials\Credentials;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 
@@ -30,7 +31,18 @@ class OpsworksProvider implements ServiceProviderInterface
     {
         $app['opsworks'] = $app->share(
             function () use ($app) {
-                return new Opsworks($app['aws']->get('opsworks'), $app['cache'], $app['logger']);
+                $opsworks = new Opsworks(
+                    $app['aws']->get('opsworks'),
+                    $app['cache'],
+                    $app['logger']
+                );
+
+                if ($app['opsworks.key'] && $app['opsworks.secret']) {
+                    $awsCredentials = new Credentials($app['opsworks.key'], $app['opsworks.secret']);
+                    $opsworks->setCredentials($awsCredentials);
+                }
+
+                return $opsworks;
             }
         );
     }
