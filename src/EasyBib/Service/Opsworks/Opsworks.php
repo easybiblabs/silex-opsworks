@@ -75,17 +75,17 @@ class Opsworks
      */
     public function deployApp($appid, $stackid, $instanceids, $comment = 'Continuous Deployment', $customJson = '')
     {
-        $deployParameters = array(
+        $deployParameters = [
             'AppId' => $appid,
-            'Command' => array(
+            'Command' => [
                 'Name' => 'deploy'
-            ),
+            ],
             'Comment' => $comment,
             'CustomJson' => $customJson,
             'StackId' => $stackid,
             'InstanceIds' => $instanceids
 
-        );
+        ];
         $this->debug('opsworks::createDeployment');
         $result = $this->opsworks->createDeployment($deployParameters);
         $deploymentId = $result->get('DeploymentId');
@@ -94,13 +94,13 @@ class Opsworks
 
     public function executeStackCommand($stackId, $command, $args = null)
     {
-        $deployParameters = array(
-            'Command' => array(
+        $deployParameters = [
+            'Command' => [
                 'Name' => $command
-            ),
+            ],
             'StackId' => $stackId,
             'InstanceIds' => $this->getInstanceIdsForStack($stackId)
-        );
+        ];
 
         if ($args) {
             $deployParameters['Command']['Args'] = $args;
@@ -150,11 +150,11 @@ class Opsworks
      */
     public function getAppParameters($appid)
     {
-        $describeParameters = array(
-            'AppIds' => array(
+        $describeParameters = [
+            'AppIds' => [
                 $appid
-            )
-        );
+            ]
+        ];
         $this->debug('opsworks::getAppParameters');
         $result = $this->opsworks->describeApps($describeParameters);
 
@@ -182,11 +182,11 @@ class Opsworks
      */
     public function getStackIdForApp($appid)
     {
-        $describeParameters = array(
-            'AppIds' => array(
+        $describeParameters = [
+            'AppIds' => [
                 $appid
-            )
-        );
+            ]
+        ];
         $result = $this->opsworks->describeApps($describeParameters);
 
         $apps = $result->get('Apps');
@@ -208,9 +208,9 @@ class Opsworks
      */
     public function getInstanceIdsForStack($stackId)
     {
-        $instanceParameters = $this->opsworks->describeInstances(array('StackId' => $stackId));
+        $instanceParameters = $this->opsworks->describeInstances(['StackId' => $stackId]);
         $instances = $instanceParameters->get('Instances');
-        $instanceIds = array();
+        $instanceIds = [];
         foreach ($instances as $instance) {
             $instanceIds[] = $instance['InstanceId'];
         }
@@ -227,9 +227,9 @@ class Opsworks
      */
     public function getInstanceIdsForLayer($layerId)
     {
-        $instanceParameters = $this->opsworks->describeInstances(array('LayerId' => $layerId));
+        $instanceParameters = $this->opsworks->describeInstances(['LayerId' => $layerId]);
         $instances = $instanceParameters->get('Instances');
-        $instanceIds = array();
+        $instanceIds = [];
         foreach ($instances as $instance) {
             $instanceIds[] = $instance['InstanceId'];
         }
@@ -246,8 +246,8 @@ class Opsworks
      */
     public function getAllAppsForStack($stackId)
     {
-        $opsworksApps = array();
-        $apiResult = $this->opsworks->describeApps(array('StackId' => $stackId))->get('Apps');
+        $opsworksApps = [];
+        $apiResult = $this->opsworks->describeApps(['StackId' => $stackId])->get('Apps');
         foreach ($apiResult as $opsworksApp) {
             $opsworksApps[$opsworksApp['AppId']] = $opsworksApp['Name'];
         }
@@ -265,7 +265,7 @@ class Opsworks
             return $this->getCache('get_all_apps');
         }
 
-        $opsworksApps = array();
+        $opsworksApps = [];
         $stackIds = array_keys($this->getAllStacks());
         foreach ($stackIds as $stackId) {
             $stackApps = $this->getAllAppsForStack($stackId);
@@ -273,6 +273,47 @@ class Opsworks
         }
 
         $this->setCache('get_all_apps', $opsworksApps);
+
+        return $opsworksApps;
+    }
+
+    /**
+     * Returns all apps belonging to a stack
+     *
+     * @param string $stackId Opsworks Stack Id
+     *
+     * @return array
+     */
+    public function describeAllAppsForStack($stackId)
+    {
+        $opsworksApps = [];
+        $apiResult = $this->opsworks->describeApps(['StackId' => $stackId])->get('Apps');
+        foreach ($apiResult as $opsworksApp) {
+            $opsworksApps[$opsworksApp['AppId']] = $opsworksApp;
+        }
+        return $opsworksApps;
+    }
+
+    /**
+     * Returns all apps across all stacks, cached
+     *
+     * @return array
+     */
+    public function describeAllApps()
+    {
+        $opsworksApps = $this->getCache('describe_all_apps');
+        if ($opsworksApps) {
+            return $opsworksApps;
+        }
+
+        $opsworksApps = [];
+        $stackIds = array_keys($this->getAllStacks());
+        foreach ($stackIds as $stackId) {
+            $stackApps = $this->DescribeAllAppsForStack($stackId);
+            $opsworksApps = array_merge($opsworksApps, $stackApps);
+        }
+
+        $this->setCache('describe_all_apps', $opsworksApps);
 
         return $opsworksApps;
     }
@@ -288,7 +329,7 @@ class Opsworks
             return $this->getCache('get_all_stacks');
         }
 
-        $stackResult = array();
+        $stackResult = [];
         $stacks = $this->opsworks->describeStacks()->get('Stacks');
 
         foreach ($stacks as $stack) {
@@ -311,7 +352,7 @@ class Opsworks
     {
         return $this->opsworks
             ->describeDeployments(
-                array('StackId' => $stackId)
+                ['StackId' => $stackId]
             )
             ->get('Deployments');
     }
@@ -327,7 +368,7 @@ class Opsworks
             return $this->getCache('get_all_deployments');
         }
 
-        $deployments = array();
+        $deployments = [];
         $stackIds = array_keys($this->getAllStacks());
         foreach ($stackIds as $stackId) {
             $deployments[$stackId] = $this->getDeploymentsForStack($stackId);
