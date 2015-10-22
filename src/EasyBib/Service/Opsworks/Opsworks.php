@@ -246,8 +246,8 @@ class Opsworks
      */
     public function getAllLayersForStack($stackId)
     {
-        $opsworksLayers = array();
-        $apiResult = $this->opsworks->describeLayers(array('StackId' => $stackId))->get('Layers');
+        $opsworksLayers = [];
+        $apiResult = $this->opsworks->describeLayers(['StackId' => $stackId])->get('Layers');
         foreach ($apiResult as $opsworksLayer) {
             $opsworksLayers[$opsworksLayer['LayerId']] = $opsworksLayer['Name'];
         }
