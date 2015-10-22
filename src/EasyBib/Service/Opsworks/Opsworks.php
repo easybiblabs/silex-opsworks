@@ -238,6 +238,23 @@ class Opsworks
     }
 
     /**
+     * Returns all layers belonging to a stack
+     *
+     * @param string $stackId Opsworks Stack Id
+     *
+     * @return array
+     */
+    public function getAllLayersForStack($stackId)
+    {
+        $opsworksLayers = array();
+        $apiResult = $this->opsworks->describeLayers(array('StackId' => $stackId))->get('Layers');
+        foreach ($apiResult as $opsworksLayer) {
+            $opsworksLayers[$opsworksLayer['LayerId']] = $opsworksLayer['Name'];
+        }
+        return $opsworksLayers;
+    }
+
+    /**
      * Returns all apps belonging to a stack
      *
      * @param string $stackId Opsworks Stack Id
