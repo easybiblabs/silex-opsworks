@@ -278,6 +278,47 @@ class Opsworks
     }
 
     /**
+     * Returns all apps belonging to a stack
+     *
+     * @param string $stackId Opsworks Stack Id
+     *
+     * @return array
+     */
+    public function describeAllAppsForStack($stackId)
+    {
+        $opsworksApps = array();
+        $apiResult = $this->opsworks->describeApps(array('StackId' => $stackId))->get('Apps');
+        foreach ($apiResult as $opsworksApp) {
+            $opsworksApps[$opsworksApp['AppId']] = $opsworksApp;
+        }
+        return $opsworksApps;
+    }
+
+    /**
+     * Returns all apps across all stacks, cached
+     *
+     * @return array
+     */
+    public function describeAllApps()
+    {
+        $opsworksApps = $this->getCache('describe_all_apps');
+        if ($opsworksApps) {
+            return $opsworksApps;
+        }
+
+        $opsworksApps = array();
+        $stackIds = array_keys($this->getAllStacks());
+        foreach ($stackIds as $stackId) {
+            $stackApps = $this->DescribeAllAppsForStack($stackId);
+            $opsworksApps = array_merge($opsworksApps, $stackApps);
+        }
+
+        $this->setCache('describe_all_apps', $opsworksApps);
+
+        return $opsworksApps;
+    }
+
+    /**
      * Returns all stacks, cached
      *
      * @return array
