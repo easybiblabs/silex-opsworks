@@ -16,6 +16,7 @@ namespace EasyBib\Service\Opsworks;
 
 use Aws\Common\Credentials\CredentialsInterface;
 use Aws\OpsWorks\OpsWorksClient;
+use Aws\OpsWorks\Exception\ResourceNotFoundException;
 use Doctrine\Common\Cache;
 use Monolog\Logger;
 
@@ -326,8 +327,12 @@ class Opsworks
         $opsworksApps = [];
         $stackIds = array_keys($this->getAllStacks());
         foreach ($stackIds as $stackId) {
-            $stackApps = $this->DescribeAllAppsForStack($stackId);
-            $opsworksApps = array_merge($opsworksApps, $stackApps);
+            try {
+                $stackApps = $this->DescribeAllAppsForStack($stackId);
+                $opsworksApps = array_merge($opsworksApps, $stackApps);
+            } catch (ResourceNotFoundException $exception) {
+                $this->deleteCache('get_all_stacks');
+            }
         }
 
         $this->setCache('describe_all_apps', $opsworksApps);
@@ -388,7 +393,11 @@ class Opsworks
         $deployments = [];
         $stackIds = array_keys($this->getAllStacks());
         foreach ($stackIds as $stackId) {
+            try {
             $deployments[$stackId] = $this->getDeploymentsForStack($stackId);
+            } catch (ResourceNotFoundException $exception) {
+                $this->deleteCache('get_all_stacks');
+            }
         }
 
         $this->setCache('get_all_deployments', $deployments);
@@ -411,5 +420,10 @@ class Opsworks
     private function getCache($identifier)
     {
         return $this->cache->fetch('bib-opsstatus-' . $identifier);
+    }
+
+    private function deleteCache($identifier)
+    {
+        return $this->cache->delete('bib-opsstatus-' . $identifier);
     }
 }
