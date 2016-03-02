@@ -394,7 +394,7 @@ class Opsworks
         $stackIds = array_keys($this->getAllStacks());
         foreach ($stackIds as $stackId) {
             try {
-            $deployments[$stackId] = $this->getDeploymentsForStack($stackId);
+                $deployments[$stackId] = $this->getDeploymentsForStack($stackId);
             } catch (ResourceNotFoundException $exception) {
                 $this->deleteCache('get_all_stacks');
             }
