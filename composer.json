@@ -16,9 +16,8 @@
         }
     ],
     "require": {
-        "php": ">=5.3.0",
         "aws/aws-sdk-php-silex": "1.*",
-        "aws/aws-sdk-php": "2.4.0",
+        "aws/aws-sdk-php": "2.*",
         "doctrine/cache": "*"
     },
     "require-dev": {

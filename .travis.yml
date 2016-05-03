@@ -4,9 +4,7 @@ install:
   - composer install --dev --prefer-dist --no-interaction
 
 php:
-  - 5.5
   - 5.6
-  - hhvm
 
 script:
   - ./bin/phpcs --standard=psr2 ./src
